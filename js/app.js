@@ -265,16 +265,30 @@ class Storage {
     localStorage.setItem('meals', JSON.stringify(meals));
   }
 
-  static removeMeal(id) {
-    const meals = Storage.getMeals();
-    meals.forEach((meal, index) => {
-      if (meal.id === id) {
-        meals.splice(index, 1);
-      }
-    });
+  //static removeMeal(id) {
+   // const meals = Storage.getMeals();
+   // meals.forEach((meal, index) => {
+    //  if (meal.id === id) {
+   //     meals.splice(index, 1);
+    //  }
+    //});
 
-    localStorage.setItem('meals', JSON.stringify(meals));
+    //localStorage.setItem('meals', JSON.stringify(meals));
+  //}
+
+  removeMeal(id) {
+    const index = this._meals.findIndex((meal) => meal.id === id);
+  
+    if (index !== -1) {
+      const meal = this._meals[index];
+      this._totalCalories -= meal.calories;
+      Storage.updateTotalCalories(this._totalCalories);
+      this._meals.splice(index, 1);
+      Storage.removeMeal(id);
+      this._render();
+    }
   }
+  
 
   static getWorkouts() {
     let workouts;
@@ -388,6 +402,8 @@ class App {
       }
     }
   }
+
+  
 
   _reset(e) {
     this._tracker.reset();
