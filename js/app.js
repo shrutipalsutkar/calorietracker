@@ -24,19 +24,6 @@ class CalorieTracker {
     Storage.saveMeal(meal);
     this._displayNewMeal(meal);
     this._render();
-    // New code to capture additional meal data
-    const mealName = document.getElementById('meal-name').value;
-    const mealCalories = parseInt(document.getElementById('meal-calories').value);
-    const bloodSugarBefore = parseInt(document.getElementById('blood-sugar-before').value);
-    const bloodSugarAfter = parseInt(document.getElementById('blood-sugar-after').value);
-    const insulinDose = parseInt(document.getElementById('insulin-dose').value);
-    const carbsConsumed = parseInt(document.getElementById('carbs-consumed').value);
-
-    // Create a new Meal object with the additional fields
-    const meal = new Meal(mealName, mealCalories, bloodSugarBefore, bloodSugarAfter, insulinDose, carbsConsumed);
-
-    // Save the meal
-    Storage.saveMeal(meal);
   }
 
   addWorkout(workout) {
@@ -168,19 +155,17 @@ class CalorieTracker {
     mealEl.classList.add('card', 'my-2');
     mealEl.setAttribute('data-id', meal.id);
     mealEl.innerHTML = `
-    <div class="card-body">
-    <div class="d-flex align-items-center justify-content-between">
-      <h4 class="mx-1">${meal.name}</h4>
-      <div
-        class="fs-1 bg-primary text-white text-center rounded-2 px-2 px-sm-5"
-      >
-        ${meal.calories}
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between">
+          <h4 class="mx-1">${meal.name}</h4>
+          <div class="fs-1 bg-primary text-white text-center rounded-2 px-2 px-sm-5">
+            ${meal.calories}
+          </div>
+          <button class="delete btn btn-danger btn-sm mx-2">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
       </div>
-      <button class="delete btn btn-danger btn-sm mx-2">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-  </div>
     `;
 
     mealsEl.appendChild(mealEl);
@@ -229,7 +214,7 @@ class Meal {
 
 class Workout {
   constructor(name, calories) {
-    this.id = Math.random().toString(16).slice(2);
+    this.id = Math.random().toString(16).slice(2    );
     this.name = name;
     this.calories = calories;
   }
@@ -322,9 +307,6 @@ class Storage {
     localStorage.removeItem('totalCalories');
     localStorage.removeItem('meals');
     localStorage.removeItem('workouts');
-
-    // If you want to clear the limit
-    // localStorage.clear();
   }
 }
 
@@ -353,20 +335,15 @@ class App {
       .addEventListener('click', this._removeItem.bind(this, 'workout'));
 
     document
-      .getElementById('filter-meals')
-      .addEventListener('keyup', this._filterItems.bind(this, 'meal'));
-
-    document
-      .getElementById('filter-workouts')
-      .addEventListener('keyup', this._filterItems.bind(this, 'workout'));
-
-    document
       .getElementById('reset')
       .addEventListener('click', this._reset.bind(this));
 
     document
       .getElementById('limit-form')
       .addEventListener('submit', this._setLimit.bind(this));
+
+      document.getElementById('suggest-exercise-btn')
+      .addEventListener('click', this._suggestExercise.bind(this));
   }
 
   _newItem(type, e) {
@@ -399,60 +376,50 @@ class App {
   }
 
   _removeItem(type, e) {
-    if (
-      e.target.classList.contains('delete') ||
-      e.target.classList.contains('fa-xmark')
-    ) {
-      if (confirm('Are you sure?')) {
-        const id = e.target.closest('.card').getAttribute('data-id');
+    if (e.target.classList.contains('delete')) {
+      const itemId = e.target.parentElement.parentElement.parentElement.getAttribute(
+        'data-id'
+      );
 
-        type === 'meal'
-          ? this._tracker.removeMeal(id)
-          : this._tracker.removeWorkout(id);
-
-        e.target.closest('.card').remove();
+      if (type === 'meal') {
+        this._tracker.removeMeal(itemId);
+      } else {
+        this._tracker.removeWorkout(itemId);
       }
     }
   }
 
-  _filterItems(type, e) {
-    const text = e.target.value.toLowerCase();
-    document.querySelectorAll(`#${type}-items .card`).forEach((item) => {
-      const name = item.firstElementChild.firstElementChild.textContent;
-
-      if (name.toLowerCase().indexOf(text) !== -1) {
-        item.style.display = 'block';
-      } else {
-        item.style.display = 'none';
-      }
-    });
-  }
-
-  _reset() {
+  _reset(e) {
     this._tracker.reset();
-    document.getElementById('meal-items').innerHTML = '';
-    document.getElementById('workout-items').innerHTML = '';
-    document.getElementById('filter-meals').value = '';
-    document.getElementById('filter-meals').value = '';
   }
 
   _setLimit(e) {
     e.preventDefault();
+    const limitInput = document.getElementById('limit');
+    const limit = parseInt(limitInput.value);
 
-    const limit = document.getElementById('limit');
-
-    if (limit.value === '') {
-      alert('Please add a limit');
+    if (isNaN(limit) || limit <= 0) {
+      alert('Please enter a valid calorie limit.');
       return;
     }
 
-    this._tracker.setLimit(+limit.value);
-    limit.value = '';
+    this._tracker.setLimit(limit);
+  }
 
-    const modalEl = document.getElementById('limit-modal');
-    const modal = bootstrap.Modal.getInstance(modalEl);
-    modal.hide();
+  _suggestExercise() {
+    const remainingCalories = this._calorieLimit - this._totalCalories;
+
+    if (remainingCalories > 0) {
+        console.log("You have", remainingCalories, "calories remaining. Consider going for a walk or doing some light cardio.");
+    } else if (remainingCalories < 0) {
+        console.log("You've exceeded your calorie limit. Consider doing some intense cardio or weightlifting to burn extra calories.");
+    } else {
+        console.log("You've reached your calorie limit. Great job! You can maintain your current activity level or do some stretching exercises.");
+    }
   }
 }
 
-const app = new App();
+document.addEventListener('DOMContentLoaded', () => {
+  new App();
+});
+
