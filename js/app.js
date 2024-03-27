@@ -214,7 +214,7 @@ class Meal {
 
 class Workout {
   constructor(name, calories) {
-    this.id = Math.random().toString(16).slice(2);
+    this.id = Math.random().toString(16).slice(2    );
     this.name = name;
     this.calories = calories;
   }
@@ -402,10 +402,21 @@ class App {
 
     this._tracker.setLimit(limit);
   }
+
+  _suggestExercise() {
+    const remainingCalories = this._calorieLimit - this._totalCalories;
+
+    if (remainingCalories > 0) {
+        console.log("You have", remainingCalories, "calories remaining. Consider going for a walk or doing some light cardio.");
+    } else if (remainingCalories < 0) {
+        console.log("You've exceeded your calorie limit. Consider doing some intense cardio or weightlifting to burn extra calories.");
+    } else {
+        console.log("You've reached your calorie limit. Great job! You can maintain your current activity level or do some stretching exercises.");
+    }
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   new App();
 });
-
 
