@@ -341,6 +341,9 @@ class App {
     document
       .getElementById('limit-form')
       .addEventListener('submit', this._setLimit.bind(this));
+
+      document.getElementById('suggest-exercise-btn')
+      .addEventListener('click', this._suggestExercise.bind(this));
   }
 
   _newItem(type, e) {
